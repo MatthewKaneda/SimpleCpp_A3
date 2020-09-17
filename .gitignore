@@ -1,0 +1,7 @@
+# Ignore Debug directory
+Debug/
+
+.DS_Store
+.cproject
+.project
+.settings/
