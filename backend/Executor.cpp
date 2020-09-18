@@ -188,10 +188,22 @@ Object Executor::visitExpression(Node *expressionNode)
             case INTEGER_CONSTANT : return visitIntegerConstant(expressionNode);
             case REAL_CONSTANT    : return visitRealConstant(expressionNode);
             case STRING_CONSTANT  : return visitStringConstant(expressionNode);
+            case NOT			  : return visitNot(expressionNode);
 
             default: return Object();
         }
     }
+
+    // Not
+    if (expressionNode->type == NOT)
+    {
+    	bool notValue = visit(expressionNode->children[0]).B;
+//    	cout << "arrived at expression type NOT " << endl;
+//    	cout << "not value : " << notValue << endl;
+    	return Object(!notValue);
+    }
+
+//    cout << "bool value for not? : " << notValue << endl;
 
     // Binary expressions.
     double value1 = visit(expressionNode->children[0]).D;
@@ -206,6 +218,9 @@ Object Executor::visitExpression(Node *expressionNode)
         {
             case EQ : value = value1 == value2; break;
             case LT : value = value1 <  value2; break;
+            case LE : value = value1 <= value2; break;
+            case GT : value = value1 >  value2; break;
+            case GE : value = value1 >= value2; break;
 
             default : break;
         }
@@ -262,6 +277,11 @@ Object Executor::visitRealConstant(Node *realConstantNode)
 Object Executor::visitStringConstant(Node *stringConstantNode)
 {
     return stringConstantNode->value;
+}
+
+Object Executor::visitNot(Node *notNode)
+{
+	return notNode->value;
 }
 
 void Executor::runtimeError(Node *node, string message)

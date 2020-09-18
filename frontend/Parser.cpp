@@ -28,6 +28,7 @@ void Parser::initialize()
     statementStarters.insert(BEGIN);
     statementStarters.insert(IDENTIFIER);
     statementStarters.insert(REPEAT);
+    statementStarters.insert(WHILE);
     statementStarters.insert(TokenType::WRITE);
     statementStarters.insert(TokenType::WRITELN);
 
@@ -93,7 +94,7 @@ Node *Parser::parseProgram()
 
 Node *Parser::parseStatement()
 {
-	cout << "parse statement : " << currentToken->text << endl;
+//	cout << "parse statement : " << currentToken->text << " : " << currentToken->lineNumber << endl;
     Node *stmtNode = nullptr;
     int savedLineNumber = currentToken->lineNumber;
     lineNumber = savedLineNumber;
@@ -117,6 +118,7 @@ Node *Parser::parseStatement()
 
 Node *Parser::parseAssignmentStatement()
 {
+//	cout << "parse assignment statement : " << currentToken->text << " : " << currentToken->lineNumber << endl;
     // The current token should now be the left-hand-side variable name.
 
     Node *assignmentNode = new Node(ASSIGN);
@@ -150,7 +152,7 @@ Node *Parser::parseAssignmentStatement()
 
 Node *Parser::parseCompoundStatement()
 {
-	cout << "parse compound statement" << endl;
+//	cout << "parse compound statement" << endl;
     Node *compoundNode = new Node(COMPOUND);
     compoundNode->lineNumber = currentToken->lineNumber;
 
@@ -160,6 +162,7 @@ Node *Parser::parseCompoundStatement()
     if (currentToken->type == END)
     {
         currentToken = scanner->nextToken();  // consume END
+//        cout << "should be current token end : " << currentToken->text << endl;
     }
     else syntaxError("Expecting END");
 
@@ -196,21 +199,20 @@ Node *Parser::parseRepeatStatement()
 
     // Create a LOOP node.
     Node *loopNode = new Node(LOOP);
-    cout << "start of repeat" << endl;
+//    cout << "start of repeat" << endl;
     currentToken = scanner->nextToken();  // consume REPEAT
 
     parseStatementList(loopNode, UNTIL);
 
     if (currentToken->type == UNTIL)
     {
-    	cout << "test node" << endl;
+//    	cout << "test node" << endl;
         // Create a TEST node. It adopts the test expression node.
         Node *testNode = new Node(TEST);
         lineNumber = currentToken->lineNumber;
         testNode->lineNumber = lineNumber;
         currentToken = scanner->nextToken();  // consume UNTIL
         testNode->adopt(parseExpression());
-//        cout << parseExpression() << endl;
 
         // The LOOP node adopts the TEST node as its final child.
         loopNode->adopt(testNode);
@@ -222,24 +224,23 @@ Node *Parser::parseRepeatStatement()
 
 Node *Parser::parseWhileStatement()
 {
-	cout << "parse while statement" << endl;
+//	cout << "parse while statement" << endl;
 	// Current token should be WHILE
 
 	// Create LOOP node
 	Node *loopNode = new Node(LOOP);
 	currentToken = scanner->nextToken();  // consume WHILE
 
-	cout << currentToken->text << endl;
-
 	// Create TEST node
+//	cout << "creating test : " << currentToken->text << endl;
 	Node *testNode = new Node(TEST);
 	Node *notNode = new Node(NodeType::NOT);
 
-//	notNode->adopt(parseExpression());
+	notNode->adopt(parseExpression());
 	// no need to consume since WHILE is already consumed
-//	testNode->adopt(notNode);
+	testNode->adopt(notNode);
 
-	testNode->adopt(parseExpression());
+//	testNode->adopt(parseExpression());
 
 //	lineNumber = currentToken->lineNumber;
 //	testNode->lineNumber = lineNumber;
@@ -249,15 +250,15 @@ Node *Parser::parseWhileStatement()
 
 	if (currentToken->type == DO)
 	{
-		cout << "do" << endl;
+//		cout << "current token type is do" << endl;
 		currentToken = scanner->nextToken(); // consume DO
-		cout << currentToken->text << endl;
+//		cout << "token after DO : " << currentToken->text << endl;
 		loopNode->adopt(parseStatement());
 	}
 	else
 	{
-		cout << "not do" << endl;
-		cout << currentToken->text << endl;
+//		cout << "not do" << endl;
+//		cout << currentToken->text << endl;
 		syntaxError("Expecting DO");
 	}
 
@@ -298,17 +299,22 @@ void Parser::parseWriteArguments(Node *node)
 {
     // The current token should now be (
 
+//	cout << "parse write arguments : " << currentToken->text << " : " << currentToken->lineNumber << endl;
+
     bool hasArgument = false;
 
     if (currentToken->type == LPAREN)
     {
-        currentToken = scanner->nextToken();  // consume (
+        currentToken = scanner->nextToken();  // consume after (
+//        cout << "consume after ( : " << currentToken->text << endl;
     }
     else syntaxError("Missing left parenthesis");
 
     if (currentToken->type == IDENTIFIER)
     {
+//    	cout << "current token identifier : " << currentToken->text << endl;
         node->adopt(parseVariable());
+//        cout << "current token after parseVariable : " << currentToken->text << endl;
         hasArgument = true;
     }
     else if (   (currentToken->type == CHARACTER)
@@ -365,6 +371,7 @@ Node *Parser::parseExpression()
     if (relationalOperators.find(currentToken->type) != relationalOperators.end())
     {
         TokenType tokenType = currentToken->type;
+//        cout << "parse expression : " << currentToken->text << " : " << currentToken->lineNumber << endl;
         Node *opNode = tokenType == EQUALS    ? new Node(EQ)
                     : tokenType == LESS_THAN ? new Node(LT)
         			: tokenType == LESS_EQUALS ? new Node(LE)

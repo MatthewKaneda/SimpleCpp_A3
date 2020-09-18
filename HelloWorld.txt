@@ -8,4 +8,11 @@ BEGIN
         write('#'); write(i);
         writeln(': Hello, world!');
     UNTIL i = 5;
+    
+    i := 0;
+    
+    REPEAT
+    	i:= i + 1
+    	
+	UNTIL i = 5;
 END.

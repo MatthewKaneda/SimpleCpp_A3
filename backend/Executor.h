@@ -53,6 +53,7 @@ private:
     Object visitIntegerConstant(Node *integerConstantNode);
     Object visitRealConstant(Node *realConstantNode);
     Object visitStringConstant(Node *stringConstantNode);
+    Object visitNot(Node *notNode);
 
     void printValue(vector<Node *> children);
     void runtimeError(Node *node, string message);
